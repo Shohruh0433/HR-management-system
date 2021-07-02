@@ -1,6 +1,7 @@
 package uz.developer.hrmanagementsystem.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import uz.developer.hrmanagementsystem.entity.Salary;
 import uz.developer.hrmanagementsystem.payload.SalaryDto;
@@ -19,6 +20,7 @@ public class SalaryService {
     @Autowired
     UserRepository userRepository;
 
+    @PreAuthorize(value = "hasAnyRole('ROLL_DIRECTOR','ROLL_HR_MANAGER')")
     public ApiResponse give(SalaryDto salaryDto){
         boolean b = userRepository.existsById(salaryDto.getUserId());
         if (!b) return  new ApiResponse("Bunday xodim topilmadi", false);
@@ -33,11 +35,12 @@ public class SalaryService {
         return  new ApiResponse("xodimga oylik muvaaffaqiyatli belgilandi", true);
 
     }
-
+    @PreAuthorize(value = "hasAnyRole('ROLL_DIRECTOR','ROLL_HR_MANAGER')")
     public ApiResponse getByMonthAndYear(int month, int year){
         return new ApiResponse("malumot ",true,salaryRepository.findAllByForMonthAndForYear(month, year));
     }
 
+    @PreAuthorize(value = "hasAnyRole('ROLL_DIRECTOR','ROLL_HR_MANAGER')")
     public ApiResponse getByUserId(UUID id){
         return new ApiResponse("malumot ",true,salaryRepository.findAllByUserId(id));
 

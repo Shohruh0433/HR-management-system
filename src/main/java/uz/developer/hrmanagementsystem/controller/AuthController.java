@@ -3,7 +3,9 @@ package uz.developer.hrmanagementsystem.controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+import uz.developer.hrmanagementsystem.entity.User;
 import uz.developer.hrmanagementsystem.payload.LoginDto;
 import uz.developer.hrmanagementsystem.payload.RegisterDto;
 import uz.developer.hrmanagementsystem.responce.ApiResponse;
@@ -43,10 +45,10 @@ public class AuthController {
 
     //Xodim qo'shish. Bu faqat directorga va Hr managerga ruhsat
     @PostMapping("/register/employee")
-    public ResponseEntity<?> registerEmploye(@Valid @RequestBody RegisterDto registerDto, HttpServletRequest httpServletRequest
-                                             ){
+    public ResponseEntity<?> registerEmploye(@Valid @RequestBody RegisterDto registerDto   ){
 
-        ApiResponse register = authService.registerEmployee(registerDto,httpServletRequest);
+       User user= (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        ApiResponse register = authService.registerEmployee(registerDto,user.getEmail());
         return ResponseEntity.status(register.isSuccess()?201:409).body(register);
     }
 

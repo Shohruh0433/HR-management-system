@@ -1,6 +1,7 @@
 package uz.developer.hrmanagementsystem.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import uz.developer.hrmanagementsystem.entity.Turnicet;
 import uz.developer.hrmanagementsystem.repository.TurnicetRepository;
@@ -19,6 +20,7 @@ public class TurnicetService {
     @Autowired
     UserRepository userRepository;
 
+    @PreAuthorize(value = "hasAnyRole('ROLL_EMPLOYEE','ROLL_HR_MANAGER','ROLL_MANAGER','ROLL_DIRECTOR')")
     public ApiResponse input(UUID id){
         boolean exists = userRepository.existsById(id);
         if (!exists) return new ApiResponse("Bunday user topilmadi. Korxonaga kirolmaysiz!",false);
@@ -33,6 +35,8 @@ public class TurnicetService {
         return new ApiResponse("Xush kelibsiz Kirishingiz mumkin!",true);
 
     }
+
+    @PreAuthorize(value = "hasAnyRole('ROLL_EMPLOYEE','ROLL_HR_MANAGER','ROLL_MANAGER','ROLL_DIRECTOR')")
     public ApiResponse output(UUID id){
         boolean exists = userRepository.existsById(id);
         if (!exists) return new ApiResponse("Bunday user topilmadi! Siz noqonuniy kiribsiz",false);
@@ -48,7 +52,7 @@ public class TurnicetService {
 
     }
 
-
+    @PreAuthorize(value = "hasAnyRole('ROLL_HR_MANAGER','ROLL_MANAGER','ROLL_DIRECTOR')")
     public ApiResponse getTurnicetById(UUID id){
      return new ApiResponse("malumotlar ",true,turnicetRepository.findAllByUserId(id));
 

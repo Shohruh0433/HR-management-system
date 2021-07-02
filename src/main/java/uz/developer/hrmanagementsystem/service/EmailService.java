@@ -4,6 +4,7 @@ package uz.developer.hrmanagementsystem.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import uz.developer.hrmanagementsystem.entity.Task;
 import uz.developer.hrmanagementsystem.entity.User;
@@ -109,6 +110,7 @@ public class EmailService {
         }
     }
 
+    @PreAuthorize(value = "hasAnyRole('ROLL_EMPLOYEE','ROLL_HR_MANAGER','ROLL_MANAGER','ROLL_DIRECTOR')")
     public ApiResponse verifyEmailforTaskCheck(String emailCode, String email,long id){
 
         Optional<Task> optionalTask = taskRepository.findById(id);

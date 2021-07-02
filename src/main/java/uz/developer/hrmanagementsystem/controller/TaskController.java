@@ -4,6 +4,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpRequest;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import uz.developer.hrmanagementsystem.entity.User;
 import uz.developer.hrmanagementsystem.payload.TaskDto;
@@ -26,10 +29,11 @@ public class TaskController {
 
     //Vazifa berish. Buni faqat director va managerlar qila oladi
     @PostMapping("/add")
-    public ResponseEntity<?> add(@RequestBody TaskDto taskDto, HttpServletRequest httpRequest
+    public ResponseEntity<?> add(@RequestBody TaskDto taskDto
                                  ){
 
-        ApiResponse apiResponse = taskService.addTask(taskDto,httpRequest);
+        User user=(User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        ApiResponse apiResponse = taskService.addTask(taskDto,user.getEmail());
         return ResponseEntity.status(apiResponse.isSuccess()?201:409).body(apiResponse.getMessage());
 
     }
@@ -44,17 +48,21 @@ public class TaskController {
 
 //Bu faqat xodimlar uchun
     @GetMapping("/myTasks")
-    public ResponseEntity<?> getTasks(HttpServletRequest httpServletRequest,@RequestParam int page){
-        return taskService.myTasks(httpServletRequest, page);
+    public ResponseEntity<?> getTasks(@RequestParam int page){
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        return taskService.myTasks( user.getEmail(),page);
     }
 
     //Vazifani bajarilganini tekshirishga jo'natish.
     // Bunda vazifa bergan odamni email ga xabar boradi agar u tasdiqlasa muvaffaqiyatli bajarailgan bo'ladi
 
     @PostMapping("/myTasks/completed/{id}")
-    public ResponseEntity<?> taskCompleted(@PathVariable long id,HttpServletRequest httpServletRequest){
-        return taskService.complTask(id, httpServletRequest);
+    public ResponseEntity<?> taskCompleted(@PathVariable long id){
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        return taskService.complTask(id, user.getEmail());
     }
+
 
 
     @GetMapping("/verifyEmailforTaskChecked")

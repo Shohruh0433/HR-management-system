@@ -3,6 +3,7 @@ package uz.developer.hrmanagementsystem.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -52,6 +53,7 @@ public class AuthService implements UserDetailsService {
 
 
 
+    @PreAuthorize(value = "hasRole('ROLL_DIRECTOR')")
 
     public ApiResponse registerManager(RegisterDto registerDto,HttpServletRequest httpServletRequest){
         String directorEmail = jwtFilter.getEmail(httpServletRequest);
@@ -74,10 +76,12 @@ public class AuthService implements UserDetailsService {
 
     }
 
-    public ApiResponse registerEmployee(RegisterDto registerDto, HttpServletRequest httpServletRequest
+    @PreAuthorize(value = "hasAnyRole('ROLL_HR_MANAGER','ROLL_DIRECTOR')")
+
+    public ApiResponse registerEmployee(RegisterDto registerDto, String  managerEmail
                                         ){
 
-        String managerEmail = jwtFilter.getEmail(httpServletRequest);
+
         User user=new User();
         boolean existsByEmail = userRepository.existsByEmail(registerDto.getEmail());
         if (existsByEmail) return new ApiResponse("Bu email avval ro'yxatdan o'ttgan",false);
@@ -97,7 +101,9 @@ public class AuthService implements UserDetailsService {
 
     }
 
-public ApiResponse hrManager(UUID id){
+    @PreAuthorize(value = "hasRole('ROLL_DIRECTOR')")
+
+    public ApiResponse hrManager(UUID id){
     Optional<User> userOptional = userRepository.findById(id);
     if (!userOptional.isPresent())
         return new ApiResponse("Bunday xodim mavjud emas",false);

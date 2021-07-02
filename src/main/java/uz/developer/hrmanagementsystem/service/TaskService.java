@@ -7,6 +7,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import uz.developer.hrmanagementsystem.entity.Task;
 import uz.developer.hrmanagementsystem.entity.User;
@@ -35,9 +36,9 @@ public class TaskService {
     JwtFilter jwtFilter;
 
 
+    @PreAuthorize(value = "hasAnyRole('ROLL_DIRECTOR','ROLL_HR_MANAGER','ROLL_MANAGER')")
+    public ApiResponse addTask(TaskDto taskDto,String email){
 
-    public ApiResponse addTask(TaskDto taskDto, HttpServletRequest httpRequest){
-        String email = jwtFilter.getEmail(httpRequest);
         Task task=new Task();
 
         task.setNewTask(true);
@@ -62,12 +63,16 @@ public class TaskService {
     }
 
 
-    public ResponseEntity<?> myTasks(HttpServletRequest httpServletRequest,int page){
-        String email = jwtFilter.getEmail(httpServletRequest);
+
+    @PreAuthorize(value = "hasAnyRole('ROLL_EMPLOYEE','ROLL_HR_MANAGER','ROLL_MANAGER')")
+    public ResponseEntity<?> myTasks(String email,int page){
+
         Pageable pageable= PageRequest.of(page,10);
         Page<Task> allByUser_email = taskRepository.findAllByUser_Email(email, pageable);
         return ResponseEntity.ok(allByUser_email);
     }
+
+    @PreAuthorize(value = "hasAnyRole('ROLL_HR_MANAGER','ROLL_MANAGER','ROLL_DIRECTOR')")
 
     public ResponseEntity<?> tasksByUserId(UUID id,int page){
 
@@ -79,8 +84,10 @@ public class TaskService {
         return ResponseEntity.ok(allByUser_email);
     }
 
-    public ResponseEntity<?> complTask(long id,HttpServletRequest httpServletRequest){
-        String email = jwtFilter.getEmail(httpServletRequest);
+
+    @PreAuthorize(value = "hasAnyRole('ROLL_EMPLOYEE','ROLL_HR_MANAGER','ROLL_MANAGER')")
+    public ResponseEntity<?> complTask(long id,String email){
+
         Optional<Task> optionalTask = taskRepository.findByUser_EmailAndId(email, id);
         if (!optionalTask.isPresent())
             return ResponseEntity.status(404).body("sizda bunday vazifa mavjud emas");

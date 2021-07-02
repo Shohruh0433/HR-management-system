@@ -22,11 +22,11 @@ public class MySecurityConfig extends WebSecurityConfigurerAdapter {
                 .csrf().disable()
                 .httpBasic().disable()
                 .authorizeRequests()
-                .antMatchers("/api/auth/register/manager","/register/hrManager/*","/api/user/**").hasRole("ROLL_DIRECTOR")
-                .antMatchers("/api/auth/register/employee","/api/salary/**","/api/task/**","/api/turnicet/byUserId/*").hasAnyRole("ROLL_HR_MANAGER","ROLL_DIRECTOR")
-
-                .antMatchers("/api/task/myTasks","/api/task/myTasks/**","/api/turnicet/in/*","/api/turnicet/out/*").hasRole("ROLL_EMPLOYEE")
-
+//                .antMatchers("/api/auth/register/manager","/register/hrManager/*","/api/user/**").hasRole("ROLL_DIRECTOR")
+//                .antMatchers("/api/auth/register/employee","/api/salary/**","/api/task/**","/api/turnicet/byUserId/*").hasAnyRole("ROLL_HR_MANAGER","ROLL_DIRECTOR")
+//
+//                .antMatchers("/api/task/myTasks","/api/task/myTasks/**","/api/turnicet/in/*","/api/turnicet/out/*").hasRole("ROLL_EMPLOYEE")
+//
 
                 .antMatchers("/api/auth/verifyEmail","/api/auth/login","/api/task/verifyEmailforTask").permitAll()
 
