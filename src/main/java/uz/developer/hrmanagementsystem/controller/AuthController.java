@@ -35,22 +35,21 @@ public class AuthController {
         return authService.hrManager(id);
     }
 
-    //manager qo'shish . Bu faqat directorga ruhsat
-    @PostMapping("/register/manager")
-    public ResponseEntity<?> registerManager(@Valid @RequestBody RegisterDto registerDto,HttpServletRequest httpServletRequest){
+    //xodim qo'shish . Bu faqat directorga va hr managerga ruhsat
+    @PostMapping("/register")
+    public ResponseEntity<?> register(@Valid @RequestBody RegisterDto registerDto){
 
-        ApiResponse register = authService.registerManager(registerDto,httpServletRequest);
+        ApiResponse register = authService.registerEmployee(registerDto);
         return ResponseEntity.status(register.isSuccess()?201:409).body(register);
     }
 
-    //Xodim qo'shish. Bu faqat directorga va Hr managerga ruhsat
-    @PostMapping("/register/employee")
-    public ResponseEntity<?> registerEmploye(@Valid @RequestBody RegisterDto registerDto   ){
-
-       User user= (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        ApiResponse register = authService.registerEmployee(registerDto,user.getEmail());
-        return ResponseEntity.status(register.isSuccess()?201:409).body(register);
+    //manager tayinlash . Bu faqat directorga ruhsat
+    @PostMapping("/register/manager/{id}")
+    public ApiResponse registerManager(@PathVariable UUID id){
+        return authService.regManager(id);
     }
+
+
 
     @GetMapping("/verifyEmail")
     public HttpEntity<?> verify(@RequestParam String emailCode, @RequestParam String email){

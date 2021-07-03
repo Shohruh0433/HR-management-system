@@ -1,13 +1,13 @@
 package uz.developer.hrmanagementsystem.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.mail.SimpleMailMessage;
-import org.springframework.mail.javamail.JavaMailSender;
+
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -53,34 +53,13 @@ public class AuthService implements UserDetailsService {
 
 
 
-    @PreAuthorize(value = "hasRole('ROLL_DIRECTOR')")
-
-    public ApiResponse registerManager(RegisterDto registerDto,HttpServletRequest httpServletRequest){
-        String directorEmail = jwtFilter.getEmail(httpServletRequest);
-        User user=new User();
-        boolean existsByEmail = userRepository.existsByEmail(registerDto.getEmail());
-        if (existsByEmail) return new ApiResponse("Bu email avval ro'yxatdan o'tgan",false);
-
-        user.setEmail(registerDto.getEmail());
-        user.setFirstName(registerDto.getFirstName());
-        user.setLastName(registerDto.getLastName());
-        user.setPassword(passwordEncoder.encode(registerDto.getPassword()));
-        user.setRoles(Collections.singleton(roleRepository.findAllByName(RoleEnum.ROLL_MANAGER)));
-        user.setEmailCode(UUID.randomUUID().toString());
-        userRepository.save(user);
-        boolean sendEmail = emailService.sendEmail(registerDto.getEmail(), user.getEmailCode(),directorEmail);
-        if (sendEmail)
-        return new ApiResponse("Muvaffaqiyatli ro'yxatdan o'tdingiz. Akkountingizni aktivlashtirish uchun emailingizni tasdiqlang",true);
-        else
-            return new ApiResponse("Emailga xabar yuborishda xatolik",false);
-
-    }
 
     @PreAuthorize(value = "hasAnyRole('ROLL_HR_MANAGER','ROLL_DIRECTOR')")
 
-    public ApiResponse registerEmployee(RegisterDto registerDto, String  managerEmail
+    public ApiResponse registerEmployee(RegisterDto registerDto
                                         ){
 
+        User user1 = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         User user=new User();
         boolean existsByEmail = userRepository.existsByEmail(registerDto.getEmail());
@@ -93,7 +72,7 @@ public class AuthService implements UserDetailsService {
         user.setRoles(Collections.singleton(roleRepository.findAllByName(RoleEnum.ROLL_EMPLOYEE)));
         user.setEmailCode(UUID.randomUUID().toString());
         userRepository.save(user);
-        boolean sendEmail = emailService.sendEmail(registerDto.getEmail(), user.getEmailCode(),managerEmail);
+        boolean sendEmail = emailService.sendEmail(registerDto.getEmail(), user.getEmailCode(), user1.getEmail());
         if (sendEmail)
             return new ApiResponse("Muvaffaqiyatli ro'yxatdan o'tdingiz. Akkountingizni aktivlashtirish uchun emailingizni tasdiqlang",true);
         else
@@ -114,6 +93,18 @@ public class AuthService implements UserDetailsService {
 
 }
 
+    @PreAuthorize(value = "hasRole('ROLL_DIRECTOR')")
+
+    public ApiResponse regManager(UUID id){
+        Optional<User> userOptional = userRepository.findById(id);
+        if (!userOptional.isPresent())
+            return new ApiResponse("Bunday xodim mavjud emas",false);
+        User user= userOptional.get();
+        user.setRoles(Collections.singleton(roleRepository.findAllByName(RoleEnum.ROLL_MANAGER)));
+        userRepository.save(user);
+        return new ApiResponse("Muvaffaqiyatli  manager tayinlandi",true);
+
+    }
 
     public ApiResponse login(LoginDto loginDto){
         try {
