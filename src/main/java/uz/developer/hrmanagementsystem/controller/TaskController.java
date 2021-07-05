@@ -32,8 +32,7 @@ public class TaskController {
     public ResponseEntity<?> add(@RequestBody TaskDto taskDto
                                  ){
 
-        User user=(User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        ApiResponse apiResponse = taskService.addTask(taskDto,user.getEmail());
+        ApiResponse apiResponse = taskService.addTask(taskDto);
         return ResponseEntity.status(apiResponse.isSuccess()?201:409).body(apiResponse.getMessage());
 
     }

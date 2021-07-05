@@ -8,6 +8,7 @@ import org.springframework.http.HttpRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import uz.developer.hrmanagementsystem.entity.Task;
 import uz.developer.hrmanagementsystem.entity.User;
@@ -37,7 +38,10 @@ public class TaskService {
 
 
     @PreAuthorize(value = "hasAnyRole('ROLL_DIRECTOR','ROLL_HR_MANAGER','ROLL_MANAGER')")
-    public ApiResponse addTask(TaskDto taskDto,String email){
+    public ApiResponse addTask(TaskDto taskDto){
+
+        User ownerUser=(User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
 
         Task task=new Task();
 
@@ -45,7 +49,7 @@ public class TaskService {
         task.setDescription(task.getDescription());
         task.setExpireDate(taskDto.getExpireDate());
         task.setName(task.getName());
-        task.setOwnerTaskEmail(email);
+        task.setOwnerTaskEmail(ownerUser.getEmail());
         Optional<User> optionalUser = userRepository.findByEmail(taskDto.getUserEmail());
         if (!optionalUser.isPresent())
             return new ApiResponse("Bunday xodim mavjud emas",false);
@@ -55,7 +59,7 @@ public class TaskService {
         task.setUser(optionalUser.get());
         Task saved = taskRepository.save(task);
 
-        boolean sendEmail = emailService.sendEmailforTask(taskDto.getUserEmail(), task.getCodeForEmail(),saved.getId(),email);
+        boolean sendEmail = emailService.sendEmailforTask(taskDto.getUserEmail(), task.getCodeForEmail(),saved.getId(), ownerUser.getEmail());
         if (sendEmail)
             return new ApiResponse("Vazifa xodimga yuklatildi. Xodimning elektron manziliga yuborildi. Olganini tasdiqlashi kerak",true);
         else
