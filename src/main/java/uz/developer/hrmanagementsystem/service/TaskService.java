@@ -90,9 +90,9 @@ public class TaskService {
 
 
     @PreAuthorize(value = "hasAnyRole('ROLL_EMPLOYEE','ROLL_HR_MANAGER','ROLL_MANAGER')")
-    public ResponseEntity<?> complTask(long id,String email){
+    public ResponseEntity<?> complTask(long id,String userEmail){
 
-        Optional<Task> optionalTask = taskRepository.findByUser_EmailAndId(email, id);
+        Optional<Task> optionalTask = taskRepository.findByUser_EmailAndId(userEmail, id);
         if (!optionalTask.isPresent())
             return ResponseEntity.status(404).body("sizda bunday vazifa mavjud emas");
         Task task= optionalTask.get();

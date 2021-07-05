@@ -37,9 +37,10 @@ public class TaskController {
 
     }
 
+    //bu methodni vazifasi employe ni emailiga xabar borganda  tasdiqlasa  task bajarish rejimi true boladi
     @GetMapping("/verifyEmailforTask")
-    public HttpEntity<?> verify(@RequestParam String emailCode, @RequestParam String email,@RequestParam long id){
-        ApiResponse apiResponse = emailService.verifyEmailforTask(emailCode, email,id);
+    public HttpEntity<?> verify(@RequestParam String emailCode, @RequestParam String employeEmail,@RequestParam long id){
+        ApiResponse apiResponse = emailService.verifyEmailforTask(emailCode, employeEmail,id);
         return ResponseEntity.status(apiResponse.isSuccess()?200:409).body(apiResponse);
 
     }
@@ -64,9 +65,11 @@ public class TaskController {
 
 
 
+    // task ning egasiga task yechimi to'g'riligi to'g'risida xabar boradi agar u tasdiqlasa
+    // shu yo'lga keladi va task comleted true bo'ladi
     @GetMapping("/verifyEmailforTaskChecked")
-    public HttpEntity<?> verifyEmailforTaskChecked(@RequestParam String emailCode, @RequestParam String email,@RequestParam long id){
-        ApiResponse apiResponse = emailService.verifyEmailforTaskCheck(emailCode, email,id);
+    public HttpEntity<?> verifyEmailforTaskChecked(@RequestParam long id){
+        ApiResponse apiResponse = emailService.verifyEmailforTaskCheck(id);
         return ResponseEntity.status(apiResponse.isSuccess()?200:409).body(apiResponse);
 
     }

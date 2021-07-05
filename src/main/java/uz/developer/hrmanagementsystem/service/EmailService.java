@@ -67,7 +67,7 @@ public class EmailService {
             simpleMailMessage.setTo(sendingEmail);
             simpleMailMessage.setSubject("Vazifani qabul qilganingizni tasdiqlash");
             simpleMailMessage.setText("<a href='http://10.100.201.234:8080/api/task/verifyEmailforTask" +
-                    "?emailCode="+emailCode+"&email="+sendingEmail+"&id="+id+"'>Tasdiqlang</a>");
+                    "?emailCode="+emailCode+"&employeEmail="+sendingEmail+"&id="+id+"'>Tasdiqlang</a>");
             javaMailSender.send(simpleMailMessage);
             return true;
         }catch (Exception e){
@@ -75,15 +75,15 @@ public class EmailService {
         }
     }
 
-    public ApiResponse verifyEmailforTask(String emailCode, String email,long id){
+    public ApiResponse verifyEmailforTask(String emailCode, String employeEmail,long id){
 
-        Optional<Task> optionalTask = taskRepository.findById(id);
+        Optional<Task> optionalTask = taskRepository.findByIdAndCodeForEmailAndUser_Email(id,emailCode,employeEmail);
         if (optionalTask.isPresent()){
             Task task= optionalTask.get();
             task.setDoingTask(true);
             task.setCodeForEmail(null);
             taskRepository.save(task);
-            return new ApiResponse("vazifa tasdiqlandi",true);
+            return new ApiResponse("vazifa tasdiqlandi, Va bajarish rejimiga o'tdi vaqt ketdi",true);
         }
 
         return new ApiResponse("Tasdiqlanmadi",false);
@@ -94,15 +94,15 @@ public class EmailService {
     }
 
 
-
-    public boolean sendEmailforTaskCheck(String sendingEmail,String emailCode,Long id,String fromemail){
+//task bergan odamni emailiga task to'g'rimi tasdiqlash  xabar
+    public boolean sendEmailforTaskCheck(String ownerEmail,String emailCode,Long id,String employeEmail){
         try {
             SimpleMailMessage simpleMailMessage=new SimpleMailMessage();
-            simpleMailMessage.setFrom(fromemail);
-            simpleMailMessage.setTo(sendingEmail);
+            simpleMailMessage.setFrom(employeEmail);
+            simpleMailMessage.setTo(ownerEmail);
             simpleMailMessage.setSubject("vazifa to'griligini tasdiqlash");
             simpleMailMessage.setText("<a href='http://10.100.201.234:8080/api/task/verifyEmailforTaskChecked" +
-                    "?emailCode="+emailCode+"&email="+sendingEmail+"&id="+id+"'>Tasdiqlang</a>");
+                    "?id="+id+"'>Tasdiqlang</a>");
             javaMailSender.send(simpleMailMessage);
             return true;
         }catch (Exception e){
@@ -110,13 +110,16 @@ public class EmailService {
         }
     }
 
-    @PreAuthorize(value = "hasAnyRole('ROLL_EMPLOYEE','ROLL_HR_MANAGER','ROLL_MANAGER','ROLL_DIRECTOR')")
-    public ApiResponse verifyEmailforTaskCheck(String emailCode, String email,long id){
+
+
+
+    @PreAuthorize(value = "hasAnyRole('ROLL_HR_MANAGER','ROLL_MANAGER','ROLL_DIRECTOR')")
+    public ApiResponse verifyEmailforTaskCheck(long id){
 
         Optional<Task> optionalTask = taskRepository.findById(id);
         if (optionalTask.isPresent()){
             Task task= optionalTask.get();
-            task.setDoingTask(true);
+            task.setDoingTask(false);
             task.setCodeForEmail(null);
             task.setCompletedTask(true);
             taskRepository.save(task);
